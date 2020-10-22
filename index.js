@@ -13,3 +13,11 @@ app.listen(PORT, () => {
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
+let user {
+	userName = '',
+	name = '',
+	email = '',
+	phone = '',
+	address = '',
+	password = ''
+}
