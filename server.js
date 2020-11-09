@@ -1,41 +1,61 @@
 require('dotenv').config();
 
+const SERVER_PORT = process.env.SERVER_PORT || 3000;
+const JWT_SIGNATURE = process.env.JWT_SIGNATURE;
+
 const express = require('express');
 const app = new express();
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const helmet = require('helmet');
 const jwt = require('jsonwebtoken');
+const apiRouter = require('./routes/api');
+require('./db');
 
-const { 
+const {
     check_user_exist,
     user_validation,
-    authenticate_token
+    authenticate_token,
+    is_admin
 } = require('./middlewares');
 
-const SERVER_PORT = process.env.SERVER_PORT;
-const JWT_SIGNATURE = process.env.JWT_SIGNATURE;
-
-// SERVER PORT
-app.listen(SERVER_PORT, () => {
-    console.log('Web server running on port', SERVER_PORT);
-});
-
 // APP USEs
-app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(express.json());
 app.use(cors());
 app.use(helmet());
+app.use('/api', apiRouter); // apiRouter will manege all routes which includes '/api'
+
+// SERVER PORT
+app.listen(SERVER_PORT, () => {
+    console.log(`Web server running on http://localhost:${SERVER_PORT}`);
+});
 
 // OBJECTS
-let users = [];
-
-let admins = [{
+let user_admin = {
     username: process.env.ADMIN_USERNAME,
+    name: process.env.ADMIN_NAME,
     email: process.env.ADMIN_EMAIL,
-    password: process.env.ADMIN_PASSWORD
-}]
+    phone: process.env.ADMIN_PHONE,
+    //address = process.env.ADMIN_ADDRESS,
+    password: process.env.ADMIN_PASSWORD,
+    role: process.env.ADMIN_ROLE,
+};
+
+let users = [user_admin];
+
+// let order = {
+//     id_order: '',
+//     status: '',     //[Confirmado, En preparacion, En camino, Entregado]
+//     time: '',
+//     products: '',
+//     payment: '',
+//     //user.name:
+//     //user.address:
+// }
+
+let orders = [];
 
 let menu = [
     {
@@ -72,18 +92,6 @@ let menu = [
     }
 ];
 
-// function authenticate_token(req, res, next) {
-//     let authHeader = req.headers.authorization;
-//     let token = authHeader && authHeader.split(' ')[1];
-//     if (token == null) return res.status(401).send('Authenticated fail');
-
-//     jwt.verify(token, process.env.ACCESS_TOKEN_SIGNATURE, (err, payload) => {
-//         if (err) return res.status(401).send('Ups, authenticated fail');
-//         req.login = payload;
-//         next();
-//     });
-// }
-
 // USER SERVICES //
 app.post('/user/register', check_user_exist(users), (req, res) => {
     let user = new Object;
@@ -102,27 +110,50 @@ app.post('/user/register', check_user_exist(users), (req, res) => {
 
 app.post('/user/login', user_validation(users), (req, res) => {
     const payload = {
-        user: req.user.username,
+        username: req.user.username,
         role: req.user.role
     }
     const accessToken = jwt.sign(payload, JWT_SIGNATURE);
 
-    res.status(200).json({
+    res.status(200).send({
         msg: `${req.user.username} logged in successfully`,
         token: accessToken
     });
 });
 
 app.get('/user/menu', (req, res) => {
-    res.json(menu);
+    res.send(menu);
 });
 
-app.get('/user/menuFav', authenticate_token(), (req, res) => {
-  res.json('wORKING ON IT')//user.favorites[]);
+app.post('/user/order', authenticate_token(), (req, res) => {
+    //Cargar el pedido armando un objeto ORDER
+    let filtered_users = users.filter(user => user.username === req.login.username);
+
+    // Get current time
+    let cuerrent_time = new Date;
+    let hours = cuerrent_time.getHours();
+    let minutes = cuerrent_time.getMinutes();
+    if (minutes < 10) minutes = `0${minutes}`;
+
+    //Create new order
+    let order = new Object;
+    order.id_order = '#'; // Asigned by the Data Base
+    order.status = 'new';     //[Confirmado, En preparacion, En camino, Entregado]
+    order.time = `${hours}:${minutes}`;
+    order.products = req.body.products;
+    order.payment = req.body.payment;
+    order.name = filtered_users[0].name;
+    order.address = filtered_users[0].address;
+
+    // Add order to the orders list
+    orders.push(order);
+
+    res.status(200).send('Ok');
+
 });
 
-//app.post('/user/order', authenticate_token, (req, res) => {
-//  
+//app.get('/user/menuFav', authenticate_token(), (req, res) => {
+//    res.json('wORKING ON IT')//user.favorites[]);
 //});
 
 //app.get('/user/orderStatus', authenticate_token, (req, res) => {
@@ -130,23 +161,51 @@ app.get('/user/menuFav', authenticate_token(), (req, res) => {
 //});
 
 // ADMIN SERVICES //
-app.post('/admin/login', user_validation(admins), (req, res) => {
+app.post('/admin/login', user_validation(users), (req, res) => {
     const payload = {
         user: req.user.username,
         role: req.user.role
     }
     const accessToken = jwt.sign(payload, JWT_SIGNATURE);
 
-    res.status(200).json({
+    res.status(200).send({
         msg: `${req.user.username} logged in successfully`,
         token: accessToken
     });
 });
 
 app.get('/admin/users', authenticate_token(), (req, res) => {
-    res.status(200).json({
-        users: users,
-        login: req.login
+    if (req.login.role === 'admin') {
+        res.status(200).send(users);
+    } else {
+        res.status(401).send('Not allowed')
+    }
+});
+
+app.post('/admin/create_product', authenticate_token(), is_admin(), (req, res) => {
+    res.status(200).send({
+        msg: 'Creating product',
+        product: req.body
     });
 });
 
+app.get('/admin/get_product', authenticate_token(), is_admin(), (req, res) => {
+    res.status(200).send({
+        msg: 'Getting product',
+        product: req.body
+    });
+});
+
+app.put('/admin/update_product', authenticate_token(), is_admin(), (req, res) => {
+    res.status(200).send({
+        msg: 'Updating product',
+        product: req.body
+    });
+});
+
+app.delete('/admin/delete_product', authenticate_token(), is_admin(), (req, res) => {
+    res.status(200).send({
+        msg: 'Deleting product',
+        product: req.body
+    });
+});
