@@ -24,6 +24,10 @@ Da un ejemplo
 
 ### Instalación 🔧
 
+Instalar un gestor de Base de Datos MySQL y crear la Base de Datos con el nombre: dalilahresto
+Completar archivo de variables de entorno
+
+
 _Una serie de ejemplos paso a paso que te dice lo que debes ejecutar para tener un entorno de desarrollo ejecutandose_
 
 _Dí cómo será ese paso_
