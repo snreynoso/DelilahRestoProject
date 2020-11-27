@@ -10,6 +10,7 @@ const Sequelize = require('sequelize');
 const UserModel = require('./models/users');
 const ProductModel = require('./models/products');
 const OrderModel = require('./models/orders');
+const Products_x_orderModel = require('./models/products_x_order');
 
 const sequelize = new Sequelize(SQL_DATABASE, SQL_USER, SQL_PASS, {
     host: SQL_HOST,
@@ -20,15 +21,47 @@ const sequelize = new Sequelize(SQL_DATABASE, SQL_USER, SQL_PASS, {
 const User = UserModel(sequelize, Sequelize);
 const Product = ProductModel(sequelize, Sequelize);
 const Order = OrderModel(sequelize, Sequelize);
+const Products_x_order = Products_x_orderModel(sequelize, Sequelize);
 
-// sequelize.sync({ alter: true })
-//      .then(() => {
-//          console.log('The tables have been synchronized!');
-//      })
-//      .catch(e => console.log(e));
+Order.hasMany(Products_x_order, {
+    foreignKey: {
+        name: 'order_id',
+        allowNull: false
+    },
+    sourceKey: 'order_id',
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE'
+});
+
+// Products_x_order.hasOne(Product,{
+//     //sourceKey: 'product_id',
+//     //targetKey: 'product_id',
+//     onDelete: 'CASCADE',
+//     onUpdate: 'CASCADE'
+// });
+
+// Product.belongsTo(Products_x_order, {
+//     foreignKey: {
+//         name: 'product_id',
+//         allowNull: false
+//     },
+//     sourceKey: 'product_id',
+//     onDelete: 'CASCADE',
+//     onUpdate: 'CASCADE'
+// });
+
+// Order.belongsToMany(Product, { through: 'Products_x_orders'});
+// Product.belongsToMany(Order, { through: 'Products_x_orders'});
+
+// sequelize.sync({ force: true })
+//     .then(() => {
+//         console.log('The tables have been synchronized!');
+//     })
+//     .catch(e => console.log(e));
 
 module.exports = {
     User,
     Product,
-    Order
+    Order,
+    Products_x_order
 }

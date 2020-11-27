@@ -4,7 +4,7 @@ const app = new express();
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const helmet = require('helmet');
-const jwt = require('jsonwebtoken');
+//const jwt = require('jsonwebtoken');
 const apiRouter = require('./routes/api');
 require('./db');
 

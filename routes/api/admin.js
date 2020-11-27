@@ -1,5 +1,5 @@
 const router = require('express').Router();
-const { Product } = require('../../db');
+const { Product, Order, Products_x_order } = require('../../db');
 const { authenticate_token } = require('./middlewares');
 const { Op } = require("sequelize");
 
@@ -15,7 +15,7 @@ router.post('/create_product', authenticate_token(), async (req, res) => {
             });
             if (check_product !== 0) { // If exist -> notify
                 res.status(401).send('The product has already exist');
-            } else if (check_product === 0) { // If not exist -> create it
+            } else if (check_product == 0) { // If not exist -> create it
                 const insert_product = await Product.create({
                     name: req.body.name,
                     price: parseInt(req.body.price)
@@ -26,7 +26,7 @@ router.post('/create_product', authenticate_token(), async (req, res) => {
                 });
             }
         } catch (e) {
-            res.status(401).send('DB Failure, ', e);
+            res.status(409).send('DB Failed', e);
         }
     }
 });
@@ -48,7 +48,7 @@ router.get('/read_product', authenticate_token(), async (req, res) => {
                 });
             }
         } catch (e) {
-            res.status(401).send('DB Failure, ', e);
+            res.status(409).send('DB Failed');//, e);
         }
     }
 });
@@ -72,7 +72,7 @@ router.put('/update_product', authenticate_token(), async (req, res) => {
                 });
             }
         } catch (e) {
-            res.status(401).send('DB Failure, ', e);
+            res.status(409).send('DB Failed');//, e);
         }
     }
 });
@@ -96,7 +96,35 @@ router.delete('/delete_product', authenticate_token(), async (req, res) => {
                 });
             }
         } catch (e) {
-            res.status(401).send('DB Failure, ', e);
+            res.status(409).send('DB Failed');//, e);
+        }
+    }
+});
+
+router.get('/products_and_orders', authenticate_token(), async (req, res) => {
+    if (req.login.role !== 'admin') { // Require Admin role
+        res.status(401).send('Not allowed')
+    } else {
+        try {
+            //const get_products = await Product.findAll();           
+            //const get_orders = await Order.findAll();
+            const get_orders = await Order.findAll({
+                include: {
+                    model: Products_x_order,
+                    attributes: ['product_id', 'quantity', 'price_each'],
+                    //include: Product
+                }
+            });
+
+            // let products_and_orders = new Object;
+            // products_and_orders.products = get_products;
+            // products_and_orders.orders = get_orders;
+
+            // res.status(200).json(products_and_orders);
+
+            res.status(200).json(get_orders);
+        } catch (e) {
+            res.status(409).send('DB Failed', e);
         }
     }
 });

@@ -1,14 +1,11 @@
 module.exports = (sequelize, DataTypes) => {
     return sequelize.define('product', {
-        id_product: {
+        product_id: {
             type: DataTypes.INTEGER,
             primaryKey: true,
             autoIncrement: true
         },
-        name: {
-            type: DataTypes.STRING,
-            unique: true
-        },
+        name: DataTypes.STRING,
         price: DataTypes.INTEGER
     },
     {
