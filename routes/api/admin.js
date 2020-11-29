@@ -1,5 +1,5 @@
 const router = require('express').Router();
-const { Product, Order, Products_x_order } = require('../../db');
+const { Product, Order, Products_x_order, User } = require('../../db');
 const { authenticate_token } = require('./middlewares');
 const { Op } = require("sequelize");
 
@@ -64,9 +64,13 @@ router.put('/update_product', authenticate_token(), async (req, res) => {
             if (get_product.length === 0) {
                 res.status(401).send('The product does not exist');
             } else {
-                const update_product = await Product.update({ price: req.body.price }, {
-                    where: { name: { [Op.eq]: req.body.name } }
-                });
+                const update_product = await Product.update(
+                    {
+                        price: req.body.price
+                    },
+                    {
+                        where: { name: { [Op.eq]: req.body.name } }
+                    });
                 res.status(200).send({
                     msg: 'Price updated!'
                 });
@@ -101,28 +105,45 @@ router.delete('/delete_product', authenticate_token(), async (req, res) => {
     }
 });
 
-router.get('/products_and_orders', authenticate_token(), async (req, res) => {
+router.get('/orders', authenticate_token(), async (req, res) => {
     if (req.login.role !== 'admin') { // Require Admin role
         res.status(401).send('Not allowed')
     } else {
         try {
-            //const get_products = await Product.findAll();           
-            //const get_orders = await Order.findAll();
             const get_orders = await Order.findAll({
-                include: {
+                include: [{
                     model: Products_x_order,
-                    attributes: ['product_id', 'quantity', 'price_each'],
-                    //include: Product
-                }
+                    attributes: ['quantity', 'price_each'],
+                    include: {
+                        model: Product,
+                        attributes: ['name']
+                    }
+                },
+                {
+                    model: User,
+                    attributes: ['name'],
+                }]
             });
-
-            // let products_and_orders = new Object;
-            // products_and_orders.products = get_products;
-            // products_and_orders.orders = get_orders;
-
-            // res.status(200).json(products_and_orders);
-
             res.status(200).json(get_orders);
+        } catch (e) {
+            res.status(409).send('DB Failed', e);
+        }
+    }
+});
+
+router.put('/update_order', authenticate_token(), async (req, res) => {
+    if (req.login.role !== 'admin') { // Require Admin role
+        res.status(401).send('Not allowed')
+    } else {
+        try {
+            await Order.update(
+                {
+                    status: req.query.status
+                },
+                {
+                    where: { order_id: { [Op.eq]: req.query.id } }
+                });
+            res.status(200).send('Status changed successfully!');
         } catch (e) {
             res.status(409).send('DB Failed', e);
         }

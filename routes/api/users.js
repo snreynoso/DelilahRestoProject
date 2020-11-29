@@ -103,4 +103,34 @@ router.post('/send_order', authenticate_token(), async (req, res) => {
     }
 });
 
+router.get('/my_orders', authenticate_token(), async (req, res) => {
+    try {
+        console.log(req.login.user_id);
+
+        const my_orders = await Order.findAll({
+            where: {
+                user_id: req.login.user_id
+            },
+            include: [{
+                model: Products_x_order,
+                attributes: ['quantity', 'price_each'],
+                include: {
+                    model: Product,
+                    attributes: ['name']
+                }
+            },
+            {
+                model: User,
+                attributes: ['name'],
+            }]
+        });
+        
+        res.status(200).send(my_orders);
+
+    } catch (e) {
+        console.log('Error: ', e.parent.sqlMessage);
+        res.status(409).send('DB Failed');//, e);
+    }
+});
+
 module.exports = router;

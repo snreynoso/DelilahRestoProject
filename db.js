@@ -33,27 +33,27 @@ Order.hasMany(Products_x_order, {
     onUpdate: 'CASCADE'
 });
 
-// Products_x_order.hasOne(Product,{
-//     //sourceKey: 'product_id',
-//     //targetKey: 'product_id',
-//     onDelete: 'CASCADE',
-//     onUpdate: 'CASCADE'
-// });
+Products_x_order.hasOne(Product, {
+    foreignKey: {
+        name: 'product_id',
+        allowNull: false
+    },
+    sourceKey: 'product_id',
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE'
+});
 
-// Product.belongsTo(Products_x_order, {
-//     foreignKey: {
-//         name: 'product_id',
-//         allowNull: false
-//     },
-//     sourceKey: 'product_id',
-//     onDelete: 'CASCADE',
-//     onUpdate: 'CASCADE'
-// });
+Order.hasOne(User, {
+    foreignKey: {
+        name: 'user_id',
+        allowNull: false
+    },
+    sourceKey: 'user_id',
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE'
+});
 
-// Order.belongsToMany(Product, { through: 'Products_x_orders'});
-// Product.belongsToMany(Order, { through: 'Products_x_orders'});
-
-// sequelize.sync({ force: true })
+// sequelize.sync({ alter: true })
 //     .then(() => {
 //         console.log('The tables have been synchronized!');
 //     })

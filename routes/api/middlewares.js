@@ -50,16 +50,6 @@ function authenticate_token() {
     }
 }
 
-// function is_admin() {
-//     return (req, res, next) => {
-//         if (req.login.role !== 'admin') {
-//             res.status(401).send('Not allowed');
-//         } else {
-//             next();
-//         }
-//     }
-// }
-
 module.exports = {
     user_validation,
     authenticate_token,
