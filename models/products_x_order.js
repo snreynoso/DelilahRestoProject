@@ -10,7 +10,8 @@ module.exports = (sequelize, DataTypes) => {
         order_id: DataTypes.INTEGER,
         price_each: DataTypes.INTEGER
     },
-    {
-        timestamps: false
-    })
+        {
+            timestamps: false
+        }
+    )
 }

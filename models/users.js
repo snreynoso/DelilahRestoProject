@@ -7,18 +7,20 @@ module.exports = (sequelize, DataTypes) => {
         },
         username: {
             type: DataTypes.STRING,
-            unique: true
+            unique: 'username'
         },
         name: DataTypes.STRING,
         email: {
             type: DataTypes.STRING,
-            unique: true
+            unique: 'email'
         },
         phone: DataTypes.STRING,
+        address: DataTypes.STRING,
         password: DataTypes.STRING,
         role: DataTypes.STRING
     },
-    {
-        timestamps: false
-    })
+        {
+            timestamps: false
+        }
+    )
 }

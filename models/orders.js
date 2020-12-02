@@ -9,9 +9,11 @@ module.exports = (sequelize, DataTypes) => {
         time: DataTypes.STRING,
         payment: DataTypes.STRING,
         user_id: DataTypes.INTEGER,
+        address: DataTypes.STRING
     },
-    {
-        timestamps: false
-    })
+        {
+            timestamps: false
+        }
+    )
 
 }

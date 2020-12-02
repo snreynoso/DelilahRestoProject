@@ -12,6 +12,7 @@ const ProductModel = require('./models/products');
 const OrderModel = require('./models/orders');
 const Products_x_orderModel = require('./models/products_x_order');
 
+// CONECTING TO DB //
 const sequelize = new Sequelize(SQL_DATABASE, SQL_USER, SQL_PASS, {
     host: SQL_HOST,
     port: SQL_PORT,
@@ -23,6 +24,7 @@ const Product = ProductModel(sequelize, Sequelize);
 const Order = OrderModel(sequelize, Sequelize);
 const Products_x_order = Products_x_orderModel(sequelize, Sequelize);
 
+// TABLES ASSOCIATIONS //
 Order.hasMany(Products_x_order, {
     foreignKey: {
         name: 'order_id',
@@ -53,6 +55,7 @@ Order.hasOne(User, {
     onUpdate: 'CASCADE'
 });
 
+// SYNC DB //
 // sequelize.sync({ alter: true })
 //     .then(() => {
 //         console.log('The tables have been synchronized!');

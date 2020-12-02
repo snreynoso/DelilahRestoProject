@@ -3,7 +3,7 @@ const { Product, Order, Products_x_order, User } = require('../../db');
 const { authenticate_token } = require('./middlewares');
 const { Op } = require("sequelize");
 
-// ROUTES => /api/admin
+// ROUTES => /api/admin //
 router.post('/create_product', authenticate_token(), async (req, res) => {
     if (req.login.role !== 'admin') { // Require Admin role
         res.status(401).send('Not allowed')
@@ -126,7 +126,7 @@ router.get('/orders', authenticate_token(), async (req, res) => {
             });
             res.status(200).json(get_orders);
         } catch (e) {
-            res.status(409).send('DB Failed', e);
+            res.status(409).send('DB Failed');//, e);
         }
     }
 });
@@ -145,7 +145,7 @@ router.put('/update_order', authenticate_token(), async (req, res) => {
                 });
             res.status(200).send('Status changed successfully!');
         } catch (e) {
-            res.status(409).send('DB Failed', e);
+            res.status(409).send('DB Failed');//, e);
         }
     }
 });
