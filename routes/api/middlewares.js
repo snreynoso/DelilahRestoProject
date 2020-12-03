@@ -18,11 +18,11 @@ function user_validation() {
                 attributes: ['username', 'password', 'role']
             });
             if (user_from_db.length !== 1) { // More than one user in DB with same username or email
-                res.status(401).json('Authentication failed');
+                res.status(401).json('Username or password incorrect');
             } else {
                 const password_from_db = user_from_db[0].dataValues.password;
                 if (password !== password_from_db) {
-                    res.status(401).json('Authentication failed');
+                    res.status(401).json('Username or password incorrect');
                 } else {
                     req.user = user_from_db[0].dataValues;
                     next();
@@ -38,10 +38,10 @@ function authenticate_token() {
     return (req, res, next) => {
         let authHeader = req.headers.authorization;
         let token = authHeader && authHeader.split(' ')[1];
-        if (token == null) return res.status(401).send('Authenticated fail');
+        if (token == null) return res.status(401).send('Access token is missing or invalid');
 
         jwt.verify(token, JWT_SIGNATURE, (err, payload) => {
-            if (err) return res.status(401).send('Ups, authenticated fail');
+            if (err) return res.status(401).send('Access token is missing or invalid');
             req.login = payload;
             next();
         });

@@ -56,7 +56,7 @@ router.get('/products', async (req, res) => {
     try {
         const products = await Product.findAll();
         res.status(200).json(products);
-    } catch (e) { // username: [unique: true] email: [unique: true]
+    } catch (e) { 
         console.log('Error: ', e.parent.sqlMessage);
         res.status(409).send('DB Failure: ', e);
     }
@@ -131,13 +131,12 @@ router.get('/my_orders', authenticate_token(), async (req, res) => {
 router.get('/my_info', authenticate_token(), async (req, res) => {
     try {
         console.log(req.login.user_id);
-
         const my_info = await User.findAll({
             where: {
                 user_id: req.login.user_id
             }
         });
-        res.status(200).send(my_info);
+        res.status(200).json(my_info);
     } catch (e) {
         console.log('Error: ', e.parent.sqlMessage);
         res.status(409).send('DB Failed');//, e);

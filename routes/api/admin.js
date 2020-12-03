@@ -6,7 +6,7 @@ const { Op } = require("sequelize");
 // ROUTES => /api/admin //
 router.post('/create_product', authenticate_token(), async (req, res) => {
     if (req.login.role !== 'admin') { // Require Admin role
-        res.status(401).send('Not allowed')
+        res.status(402).send('Access token is missing or invalid')
     } else {
         try {
             // Check if the product exist in the DB
@@ -20,12 +20,10 @@ router.post('/create_product', authenticate_token(), async (req, res) => {
                     name: req.body.name,
                     price: parseInt(req.body.price)
                 });
-                res.status(200).send({
-                    msg: 'Product created!',
-                    product: insert_product.name
-                });
+                res.status(200).send('Product created!');
             }
         } catch (e) {
+            console.log('Error: ', e.parent.sqlMessage);
             res.status(409).send('DB Failed', e);
         }
     }
@@ -33,14 +31,14 @@ router.post('/create_product', authenticate_token(), async (req, res) => {
 
 router.get('/read_product', authenticate_token(), async (req, res) => {
     if (req.login.role !== 'admin') { // Require Admin role
-        res.status(401).send('Not allowed')
+        res.status(401).send('Access token is missing or invalid')
     } else {
         try {
             const get_product = await Product.findAll({
-                where: { name: { [Op.eq]: req.body.name } }
+                where: { name: { [Op.eq]: req.query.name } }
             });
             if (get_product.length === 0) {
-                res.status(401).send('The product does not exist');
+                res.status(402).send('The product does not exist');
             } else {
                 res.status(200).send({
                     name: get_product[0].dataValues.name,
@@ -48,6 +46,7 @@ router.get('/read_product', authenticate_token(), async (req, res) => {
                 });
             }
         } catch (e) {
+            console.log('Error: ', e.parent.sqlMessage);
             res.status(409).send('DB Failed');//, e);
         }
     }
@@ -55,7 +54,7 @@ router.get('/read_product', authenticate_token(), async (req, res) => {
 
 router.put('/update_product', authenticate_token(), async (req, res) => {
     if (req.login.role !== 'admin') { // Require Admin role
-        res.status(401).send('Not allowed')
+        res.status(401).send('Access token is missing or invalid')
     } else {
         try {
             const get_product = await Product.findAll({
@@ -64,18 +63,18 @@ router.put('/update_product', authenticate_token(), async (req, res) => {
             if (get_product.length === 0) {
                 res.status(401).send('The product does not exist');
             } else {
-                const update_product = await Product.update(
+                //const update_product = 
+                await Product.update(
                     {
                         price: req.body.price
                     },
                     {
                         where: { name: { [Op.eq]: req.body.name } }
                     });
-                res.status(200).send({
-                    msg: 'Price updated!'
-                });
+                res.status(200).send('Product updated!');
             }
         } catch (e) {
+            console.log('Error: ', e.parent.sqlMessage);
             res.status(409).send('DB Failed');//, e);
         }
     }
@@ -83,23 +82,22 @@ router.put('/update_product', authenticate_token(), async (req, res) => {
 
 router.delete('/delete_product', authenticate_token(), async (req, res) => {
     if (req.login.role !== 'admin') { // Require Admin role
-        res.status(401).send('Not allowed')
+        res.status(401).send('Access token is missing or invalid')
     } else {
         try {
             const get_product = await Product.findAll({
-                where: { name: { [Op.eq]: req.body.name } }
+                where: { name: { [Op.eq]: req.query.name } }
             });
             if (get_product.length === 0) {
                 res.status(401).send('The product does not exist');
             } else {
                 const delete_product = await Product.destroy({
-                    where: { name: { [Op.eq]: req.body.name } }
+                    where: { name: { [Op.eq]: req.query.name } }
                 });
-                res.status(200).send({
-                    msg: 'Product deleted!'
-                });
+                res.status(200).send('Product deleted!');
             }
         } catch (e) {
+            console.log('Error: ', e.parent.sqlMessage);
             res.status(409).send('DB Failed');//, e);
         }
     }
@@ -107,7 +105,7 @@ router.delete('/delete_product', authenticate_token(), async (req, res) => {
 
 router.get('/orders', authenticate_token(), async (req, res) => {
     if (req.login.role !== 'admin') { // Require Admin role
-        res.status(401).send('Not allowed')
+        res.status(401).send('Access token is missing or invalid')
     } else {
         try {
             const get_orders = await Order.findAll({
@@ -126,6 +124,7 @@ router.get('/orders', authenticate_token(), async (req, res) => {
             });
             res.status(200).json(get_orders);
         } catch (e) {
+            console.log('Error: ', e.parent.sqlMessage);
             res.status(409).send('DB Failed');//, e);
         }
     }
@@ -133,7 +132,7 @@ router.get('/orders', authenticate_token(), async (req, res) => {
 
 router.put('/update_order', authenticate_token(), async (req, res) => {
     if (req.login.role !== 'admin') { // Require Admin role
-        res.status(401).send('Not allowed')
+        res.status(401).send('Access token is missing or invalid')
     } else {
         try {
             await Order.update(
@@ -143,8 +142,9 @@ router.put('/update_order', authenticate_token(), async (req, res) => {
                 {
                     where: { order_id: { [Op.eq]: req.query.id } }
                 });
-            res.status(200).send('Status changed successfully!');
+            res.status(200).send('Order status updated!');
         } catch (e) {
+            console.log('Error: ', e.parent.sqlMessage);
             res.status(409).send('DB Failed');//, e);
         }
     }

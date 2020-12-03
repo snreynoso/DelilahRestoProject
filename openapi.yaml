@@ -1,0 +1,513 @@
+openapi: '3.0.0' 
+info:
+  title: Dalilah Resto
+  description: This is a server for a mock resto course project
+  version: 1.0.0
+
+  contact:
+    email: snreynoso@gmail.com
+
+tags:
+- name: User
+  description: Operations as User
+- name: Admin
+  description: Operations as Administrator
+  
+paths:
+  /api/users/register:
+    post:
+      tags: 
+      - User
+      summary: Create a new user
+      
+      requestBody:
+        description: Info from user to create new profile
+        required: true
+        content:
+          JSON:
+            schema:
+              $ref: '#/components/schemas/UserRegister'
+      responses:
+        201:
+          description: User created!
+        409:
+          description: Username or email has already exist
+          
+  /api/users/login:
+    post:
+      tags:
+      - User
+      summary: User login 
+      
+      requestBody:
+        description: User should login using its username or email and password
+        required: true
+        content:
+          JSON:
+            schema: 
+              $ref: '#/components/schemas/UserLogin'
+      responses:
+        200:
+          description: Logged in succesfully
+          content:
+            JSON:
+              schema: 
+                $ref: '#/components/schemas/UserLoginRes'
+        401:
+          description: Username or password incorrect
+        409:
+          description: DB Failed
+        
+  /api/users/products:
+    get:
+      tags:
+      - "User"
+      summary: "Get all products"
+
+      responses:
+        200:
+          description: JSON with all products
+          content:
+            JSON:
+              schema:
+                $ref: '#/components/schemas/ProductListRes'
+                
+        409:
+          description: "DB Failed"
+
+  /api/users/send_order:
+    post:
+      tags: 
+      - User
+      summary: Create a new user
+      security:
+        - bearerAuth: []
+      
+      requestBody:
+        description: The request require Authorization by Bearer Token 
+        required: true
+        content:
+          JSON:
+            schema:
+              $ref: '#/components/schemas/SendOrder'
+      responses:
+        200:
+          description: Order resgistration success!
+        401:
+          description: Access token is missing or invalid
+        409:
+          description: DB Failed
+  
+  /api/users/my_orders:
+    get:
+      tags: 
+      - User
+      summary: Get all the orders which belongs to the user
+      description: The request require Authorization by Bearer Token
+      security:
+        - bearerAuth: []
+      
+      responses:
+        200:
+         description: User received his orders
+         content:
+            JSON:
+              schema: 
+                $ref: '#/components/schemas/MyOrders'
+        401:
+          description: Access token is missing or invalid              
+        409:
+          description: DB Failed
+          
+  /api/users/my_info:
+    get:
+      tags: 
+      - User
+      summary: Get his own personal information
+      description: The request require Authorization by Bearer Token  
+      security:
+        - bearerAuth: []
+      
+      responses:
+        200:
+         description: User received his orders
+         content:
+            JSON:
+              schema: 
+                $ref: '#/components/schemas/MyInfo'
+        401:
+          description: Access token is missing or invalid              
+        409:
+          description: DB Failed
+      
+  /api/admin/create_product:
+    post:
+      tags: 
+      - Admin
+      summary: Create product
+      description: The request require Authorization by Bearer Token and Admin role
+      security:
+        - bearerAuth: []
+        
+      requestBody:
+        description: Name and price of the product
+        required: true
+        content:
+          JSON:
+            schema:
+              $ref: '#/components/schemas/CreateProduct'
+      
+      responses:
+        200:
+         description: Product created!
+        401:
+          description: Access token is missing or invalid   
+        402:
+          description: The product has already exist  
+        409:
+          description: DB Failed
+          
+  /api/admin/read_product:
+    get:
+      tags: 
+      - Admin
+      summary: Get product
+      description: The request require Authorization by Bearer Token and Admin role
+      security:
+        - bearerAuth: []
+        
+      parameters:
+        - in: query
+          name: name
+          required: true
+          schema:
+            type: string
+          description: Name of the product to find
+            
+      responses:
+        200:
+         description: Product created!
+         content:
+          JSON:
+            schema:
+              $ref: '#/components/schemas/CreateProduct'
+        401:
+          description: Access token is missing or invalid   
+        402:
+          description: The product does not exist 
+        409:
+          description: DB Failed
+          
+  /api/admin/update_product:
+    put:
+      tags: 
+      - Admin
+      summary: Update product
+      description: The request require Authorization by Bearer Token and Admin role
+      security:
+        - bearerAuth: []
+        
+      requestBody:
+        description: Name and price to update the product
+        required: true
+        content:
+          JSON:
+            schema:
+              $ref: '#/components/schemas/CreateProduct'
+      
+      responses:
+        200:
+         description: Product updated!
+        401:
+          description: Access token is missing or invalid   
+        402:
+          description: The does not exist  
+        409:
+          description: DB Failed
+          
+  /api/admin/delete_product:
+    delete:
+      tags: 
+      - Admin
+      summary: Delete product
+      description: The request require Authorization by Bearer Token and Admin role
+      security:
+        - bearerAuth: []
+        
+      parameters:
+        - in: query
+          name: name
+          required: true
+          schema:
+            type: string
+          description: Name of the product to delete
+      
+      responses:
+        200:
+         description: Product deleted!
+        401:
+          description: Access token is missing or invalid   
+        402:
+          description: The does not exist  
+        409:
+          description: DB Failed
+
+  /api/admin/orders:
+    get:
+      tags: 
+      - Admin
+      summary: Get all the orders
+      description: The request require Authorization by Bearer Token and Admin role
+      security:
+        - bearerAuth: []
+      
+      responses:
+        200:
+         description: Product created!
+         content:
+          JSON:
+            schema:
+              $ref: '#/components/schemas/MyOrders'
+        401:
+          description: Access token is missing or invalid   
+        402:
+          description: The product does not exist 
+        409:
+          description: DB Failed
+          
+  /api/admin/update_order:
+    put:
+      tags: 
+      - Admin
+      summary: Update order status
+      description: The request require Authorization by Bearer Token and Admin role
+      security:
+        - bearerAuth: []
+      
+      parameters:
+        - in: query
+          name: id
+          required: true
+          schema:
+            type: string
+          description: Id of the order to be updated
+      
+      responses:
+        200:
+         description: Order status updated!
+        401:
+          description: Access token is missing or invalid   
+        402:
+          description: The does not exist  
+        409:
+          description: DB Failed
+          
+components:
+  securitySchemes:
+    bearerAuth:            # arbitrary name for the security scheme
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    UserRegister:
+      type: object
+      items:
+        properties:
+          username:
+            type: string
+          name:
+            type: string
+          email:
+            type: string
+          phone:
+            type: string
+          address: 
+            type: string
+          password:
+            type: string
+      example:
+      - username: sperez
+        name: Santiago Perezz
+        email: sperez@mail.com
+        phone: +5493517735484
+        address: Colon 321
+        password: password
+    
+    UserLogin:
+      type: object
+      properties:
+        login: 
+          type: string
+        password:
+          type: string
+      example:
+        - login: Username or Email
+          password: Password    
+    
+    UserLoginRes:
+      type: object
+      properties:
+        msg: 
+          type: string
+        token: 
+          type: string
+          description: Token generated
+      example:
+        - msg: '{user} loged in succesfully, Role: {role}'
+          token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
+    
+    ProductListRes:  
+      type: object
+      items:
+        properties:
+          product_id:
+            type: integer
+          name:
+            type: string
+          price:
+            type: integer
+      example:
+          - product_id: 1
+            name: Pizza
+            price: 300
+          - product_id: 2
+            name: Sandwich
+            price: 120
+          - product_id: 3
+            name: Salad
+            price: 230
+
+    SendOrder:  
+      type: object
+      properties:
+        product:
+          type: object
+          items:
+            properties:
+              product_id:
+                type: integer
+              quantity:
+                type: integer
+        payment:
+          type: string
+        address:
+          type: string
+      example:
+        product:
+          - product_id: 2
+            quantity: 1
+          - product_id: 1
+            quantity: 3
+        payment: cash
+        address: Colon 123
+    
+    MyOrders:  
+      type: object
+      items:
+        properties:
+          order_id:
+            type: integer
+          status:
+            type: string
+          time:
+            type: string
+          payment:
+            type: string
+          address: 
+            type: string
+          products_x_orders:
+            type: object
+            items:
+              properties:
+                quantity:
+                  type: integer
+                price_each: 
+                  type: integer
+                product: 
+                  type: object
+                  properties:
+                    name:
+                      type: string
+          user:
+            type: object
+            properties:
+              name: 
+                type: string
+                  
+      example:
+      - order_id: 1
+        status: new
+        time: '12:23:12'
+        payment: cash
+        user_id: 2
+        address: Colon 321
+        products_x_orders: 
+          - quantity: 9
+            price_each: 230
+            product: 
+              name: pizza
+          - quantity: 4
+            price_each: 220
+            product: 
+              name: hamburguer
+        user: 
+          name: Nicolas Perez
+      - order_id: 2
+        status: new
+        time: '13:23:12'
+        payment: credit
+        user_id: 2
+        address: Colon 321
+        products_x_orders: 
+          - quantity: 3
+            price_each: 230
+            product: 
+              name: pizza
+          - quantity: 2
+            price_each: 220
+            product: 
+              name: hamburguer
+        user: 
+          name: Nicolas Perez
+  
+    MyInfo:
+      type: object
+      items:
+        properties:
+          user_id:
+            type: integer
+          username:
+            type: string
+          name:
+            type: string
+          email:
+            type: string
+          phone:
+            type: string
+          address: 
+            type: string
+          password:
+            type: string
+          role: 
+            type: string
+      example:
+      - user_id: 3
+        username: sperez
+        name: Santiago Perez
+        email: sperez@mail.com
+        phone: +5493517735484
+        address: Colon 321
+        password: password
+        role: user
+        
+    CreateProduct:
+      type: object
+      properties:
+        name: 
+          type: string
+        price:
+          type: integer
+      example:
+        name: Pizza
+        price: 220
