@@ -71,7 +71,7 @@ router.post('/send_order', authenticate_token(), async (req, res) => {
     order.time = time;
     order.payment = req.body.payment;
     order.user_id = req.login.user_id; // The ID which is included in the token
-    order.address = req.login.address;
+    order.address = req.body.address;
 
     // Create the order in the DB //
     try {

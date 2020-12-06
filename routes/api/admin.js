@@ -4,6 +4,29 @@ const { authenticate_token } = require('./middlewares');
 const { Op } = require("sequelize");
 
 // ROUTES => /api/admin //
+router.post('/register', authenticate_token(), async (req, res) => {
+    if (req.login.role !== 'admin') { // Require Admin role
+        res.status(402).send('Access token is missing or invalid')
+    } else {
+        try {
+            let user = new Object;
+            user.username = req.body.username;
+            user.name = req.body.name;
+            user.email = req.body.email;
+            user.phone = req.body.phone;
+            user.address = req.body.address;
+            user.password = req.body.password;
+            user.role = 'admin';
+
+            //const user_created = 
+            await User.create(user);
+            res.status(201).send('Admin created!');
+        } catch (e) { // username: [unique: true] email: [unique: true]
+            res.status(409).send('Username or email has already exist');
+        }
+    }
+});
+
 router.post('/create_product', authenticate_token(), async (req, res) => {
     if (req.login.role !== 'admin') { // Require Admin role
         res.status(402).send('Access token is missing or invalid')
@@ -91,7 +114,8 @@ router.delete('/delete_product', authenticate_token(), async (req, res) => {
             if (get_product.length === 0) {
                 res.status(401).send('The product does not exist');
             } else {
-                const delete_product = await Product.destroy({
+                //const delete_product = 
+                await Product.destroy({
                     where: { name: { [Op.eq]: req.query.name } }
                 });
                 res.status(200).send('Product deleted!');
@@ -135,14 +159,21 @@ router.put('/update_order', authenticate_token(), async (req, res) => {
         res.status(401).send('Access token is missing or invalid')
     } else {
         try {
-            await Order.update(
-                {
-                    status: req.query.status
-                },
-                {
-                    where: { order_id: { [Op.eq]: req.query.id } }
-                });
-            res.status(200).send('Order status updated!');
+            const get_order = await Order.findAll({
+                where: { order_id: { [Op.eq]: req.query.id } }
+            });
+            if (get_order.length === 0) {
+                res.status(401).send('The order does not exist');
+            } else {
+                await Order.update(
+                    {
+                        status: req.query.status
+                    },
+                    {
+                        where: { order_id: { [Op.eq]: req.query.id } }
+                    });
+                res.status(200).send('Order status updated!');
+            }
         } catch (e) {
             console.log('Error: ', e.parent.sqlMessage);
             res.status(409).send('DB Failed');//, e);
@@ -150,4 +181,27 @@ router.put('/update_order', authenticate_token(), async (req, res) => {
     }
 });
 
+router.delete('/delete_order', authenticate_token(), async (req, res) => {
+    if (req.login.role !== 'admin') { // Require Admin role
+        res.status(401).send('Access token is missing or invalid')
+    } else {
+        try {
+            const get_order = await Order.findAll({
+                where: { order_id: { [Op.eq]: req.query.order_id } }
+            });
+            if (get_order.length === 0) {
+                res.status(401).send('The order does not exist');
+            } else {
+                //const delete_oreder = 
+                await Order.destroy({
+                    where: { order_id: { [Op.eq]: req.query.order_id } }
+                });
+                res.status(200).send('Order deleted!');
+            }
+        } catch (e) {
+            console.log('Error: ', e.parent.sqlMessage);
+            res.status(409).send('DB Failed');//, e);
+        }
+    }
+});
 module.exports = router;

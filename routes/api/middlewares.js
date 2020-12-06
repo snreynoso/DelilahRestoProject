@@ -29,6 +29,7 @@ function user_validation() {
                 }
             }
         } catch (e) {
+            console.log('Error: ', e.parent.sqlMessage);
             res.status(401).send('DB Failure', e);
         }
     }

@@ -21,7 +21,7 @@ paths:
       summary: Create a new user
       
       requestBody:
-        description: Info from user to create new profile
+        description: Info of the user to create new profile
         required: true
         content:
           JSON:
@@ -139,7 +139,29 @@ paths:
           description: Access token is missing or invalid              
         409:
           description: DB Failed
-      
+
+  /api/admin/register:
+    post:
+      tags: 
+      - Admin
+      summary: Create a new user wtih admin role
+      description: The request require Authorization by Bearer Token and Admin role
+      security:
+        - bearerAuth: []
+
+      requestBody:
+        description: Info of the admin user to create new profile
+        required: true
+        content:
+          JSON:
+            schema:
+              $ref: '#/components/schemas/UserRegister'
+      responses:
+        201:
+          description: Admin created!
+        409:
+          description: Username or email has already exist
+
   /api/admin/create_product:
     post:
       tags: 
@@ -301,7 +323,34 @@ paths:
           description: The does not exist  
         409:
           description: DB Failed
-          
+
+  /api/admin/delete_order:
+    delete:
+      tags: 
+      - Admin
+      summary: Delete order
+      description: The request require Authorization by Bearer Token and Admin role
+      security:
+        - bearerAuth: []
+        
+      parameters:
+        - in: query
+          name: order_id
+          required: true
+          schema:
+            type: integer
+          description: order_id of the order to delete
+      
+      responses:
+        200:
+         description: Order deleted!
+        401:
+          description: Access token is missing or invalid   
+        402:
+          description: The does not exist  
+        409:
+          description: DB Failed  
+
 components:
   securitySchemes:
     bearerAuth:            # arbitrary name for the security scheme
